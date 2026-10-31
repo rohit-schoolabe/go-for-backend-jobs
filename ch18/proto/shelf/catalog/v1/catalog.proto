@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package shelf.catalog.v1;
+
+option go_package =
+  "github.com/rohit-schoolabe/go-for-backend-jobs/ch18/gen/shelf/catalog/v1;catalogv1";
+
+// CatalogService is the library's internal book catalog.
+// The REST API and the desk tools call it.
+service CatalogService {
+  // GetBook returns one book, or NOT_FOUND.
+  rpc GetBook(GetBookRequest) returns (GetBookResponse);
+  // ListBooks streams books one message at a time.
+  rpc ListBooks(ListBooksRequest)
+      returns (stream ListBooksResponse);
+  // AddBook needs a member's token in the metadata.
+  rpc AddBook(AddBookRequest) returns (AddBookResponse);
+}
+
+// Availability says whether a copy is on the shelf.
+enum Availability {
+  AVAILABILITY_UNSPECIFIED = 0;
+  AVAILABILITY_ON_SHELF = 1;
+  AVAILABILITY_ON_LOAN = 2;
+}
+
+message Book {
+  int64 id = 1;
+  string title = 2;
+  string author = 3;
+  int32 year = 4;
+  Availability availability = 5;
+  // Field 6 was shelf_code, removed in v1.1. Never reuse
+  // its number or its name.
+  reserved 6;
+  reserved "shelf_code";
+}
+
+message GetBookRequest {
+  int64 id = 1;
+}
+
+message GetBookResponse {
+  Book book = 1;
+}
+
+message ListBooksRequest {
+  // Empty means every author.
+  string author = 1;
+}
+
+message ListBooksResponse {
+  Book book = 1;
+}
+
+message AddBookRequest {
+  string title = 1;
+  string author = 2;
+  int32 year = 3;
+}
+
+message AddBookResponse {
+  Book book = 1;
+}

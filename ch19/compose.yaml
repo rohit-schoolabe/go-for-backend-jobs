@@ -1,0 +1,41 @@
+# Shelf and PostgreSQL on one machine.
+#   JWT_SECRET=$(openssl rand -hex 32) podman-compose up
+services:
+  db:
+    image: docker.io/library/postgres:17-alpine
+    environment:
+      POSTGRES_USER: shelf
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-dev}
+      POSTGRES_DB: shelf
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shelf -d shelf"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  api:
+    build:
+      context: ..
+      dockerfile: ch19/Dockerfile
+    image: localhost/shelf:dev
+    environment:
+      DATABASE_URL: "postgres://shelf:${DB_PASSWORD:-dev}\
+        @db:5432/shelf?sslmode=disable"
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
+    ports:
+      - "${SHELF_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    # Drain delay (5s) + shutdown timeout (20s) fit inside.
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "/shelf", "healthcheck"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  pgdata:

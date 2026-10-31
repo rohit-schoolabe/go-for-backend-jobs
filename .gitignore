@@ -1,0 +1,16 @@
+# Binaries and build output
+/bin/
+*.exe
+*.test
+*.out
+*.prof
+# Databases the examples create when run
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+# Coverage
+coverage.*
+# Local env files with secrets
+.env
+.env.*
